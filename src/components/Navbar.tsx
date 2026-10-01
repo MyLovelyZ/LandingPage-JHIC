@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { navItems, ppdbLink, type MenuGroup, type MenuLink } from "../data/navigation";
 import logoSekolah from "../assets/images/logosmkpenus.png";
+import { SketchArrow, SketchUnderline } from "./SketchFrame";
 
 type IsActive = (link: MenuLink) => boolean;
 
@@ -9,6 +10,15 @@ export default function Navbar() {
     const { pathname } = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
     const dialogRef = useRef<HTMLDialogElement>(null);
+    // Di paling atas halaman navbar berupa bar penuh, setelah discroll berubah jadi pill mengambang
+    const [atTop, setAtTop] = useState(() => window.scrollY < 24);
+
+    useEffect(() => {
+        const onScroll = () => setAtTop(window.scrollY < 24);
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
 
     const isActive: IsActive = (link) =>
         !link.external && (link.href === "/" ? pathname === "/" : pathname.startsWith(link.href));
@@ -36,9 +46,17 @@ export default function Navbar() {
     const closeMenu = () => setMenuOpen(false);
 
     return(
-        <header className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
+        <header className={`fixed left-0 right-0 z-50 flex justify-center pointer-events-none transition-all duration-300 motion-reduce:transition-none ${
+            atTop ? "top-0 px-0" : "top-6 px-4"
+        }`}>
+            {/* rounded-[2.5rem] (bukan rounded-full) supaya perubahan sudutnya ikut teranimasi dengan halus.
+                Saat di atas, padding kiri-kanan menyamakan isi navbar dengan lebar konten halaman (max-w-6xl) */}
             <nav
-                className="pointer-events-auto w-full max-w-5xl bg-brand-softmist rounded-full px-6 md:px-8 py-3 md:py-3.5 shadow-softpill border border-brand-ink/10 flex items-center justify-between gap-4 transition-all duration-300"
+                className={`pointer-events-auto w-full border flex items-center justify-between gap-4 transition-all duration-300 motion-reduce:transition-none ${
+                    atTop
+                        ? "max-w-full rounded-none bg-white border-transparent border-b-brand-ink/10 px-[max(1.5rem,calc((100%-72rem)/2))] py-3 md:py-4"
+                        : "max-w-5xl rounded-[2.5rem] bg-brand-softmist border-brand-ink/10 shadow-softpill px-6 md:px-8 py-3 md:py-3.5"
+                }`}
                 aria-label="Navigasi Utama"
             >
                 <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group">
@@ -70,11 +88,12 @@ export default function Navbar() {
                                     aria-current={isActive(item) ? "page" : undefined}
                                     className={`block px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 ${
                                         isActive(item)
-                                            ? "bg-brand-darkred/10 text-brand-darkred"
+                                            ? "text-brand-darkred"
                                             : "text-brand-ink/80 hover:text-brand-ink hover:bg-black/5"
                                     }`}
                                 >
-                                    {item.label}
+                                    {/* Menu aktif ditandai coretan bawah, bukan latar pill */}
+                                    {isActive(item) ? <SketchUnderline size="sm">{item.label}</SketchUnderline> : item.label}
                                 </Link>
                             </li>
                         )
@@ -89,7 +108,7 @@ export default function Navbar() {
                         className="group hidden sm:inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-linear-to-r from-brand-signal to-brand-darkred px-5 py-2 text-sm font-semibold text-white shadow-md shadow-brand-darkred/25 transition-shadow hover:shadow-lg hover:shadow-brand-darkred/30"
                     >
                         {ppdbLink.label}
-                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                        <SketchArrow className="w-6 h-3 transition-transform group-hover:translate-x-0.5" />
                     </Link>
 
                     <button
@@ -146,12 +165,14 @@ export default function Navbar() {
                                     aria-current={isActive(item) ? "page" : undefined}
                                     onClick={closeMenu}
                                     className={`font-display text-3xl font-bold uppercase tracking-wide transition-colors ${
-                                        isActive(item)
-                                            ? "text-white underline decoration-brand-warmred decoration-4 underline-offset-8"
-                                            : "text-brand-mist/80 hover:text-white"
+                                        isActive(item) ? "text-white" : "text-brand-mist/80 hover:text-white"
                                     }`}
                                 >
-                                    {item.label}
+                                    {isActive(item) ? (
+                                        <SketchUnderline tone="text-brand-warmred">{item.label}</SketchUnderline>
+                                    ) : (
+                                        item.label
+                                    )}
                                 </Link>
                             </li>
                         )
@@ -165,7 +186,7 @@ export default function Navbar() {
                         className="group flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-brand-darkred transition-colors hover:bg-brand-mist"
                     >
                         {ppdbLink.label}
-                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                        <SketchArrow className="w-6 h-3 transition-transform group-hover:translate-x-0.5" />
                     </Link>
                 </div>
             </dialog>
@@ -235,13 +256,13 @@ function NavDropdown({ group, isActive }: { group: MenuGroup; isActive: IsActive
                 }}
                 className={`inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 ${
                     active
-                        ? "bg-brand-darkred/10 text-brand-darkred"
+                        ? `text-brand-darkred ${open ? "bg-black/5" : ""}`
                         : open
                             ? "bg-black/5 text-brand-darkred"
                             : "text-brand-ink/80 hover:text-brand-ink hover:bg-black/5"
                 }`}
             >
-                {group.label}
+                {active ? <SketchUnderline size="sm">{group.label}</SketchUnderline> : group.label}
                 <Chevron className={`w-3.5 h-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
             </button>
 
@@ -334,14 +355,6 @@ function Chevron({ className }: { className?: string }) {
     return(
         <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="m6 9 6 6 6-6" />
-        </svg>
-    )
-}
-
-function ArrowRight({ className }: { className?: string }) {
-    return(
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M5 12h14M13 6l6 6-6 6" />
         </svg>
     )
 }

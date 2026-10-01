@@ -1,65 +1,154 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import Icon, { type IconName } from "./Icon";
-import { navItems, ppdbLink } from "../data/navigation";
-import { majors } from "../data/majors";
+import { ppdbLink, whatsappUrl, type MenuLink } from "../data/navigation";
+import { newsCategories } from "../data/news";
 import logoSekolah from "../assets/images/logosmkpenus.png";
+import logoPartner from "../assets/images/logofooter.webp";
+import fotoTalentaVokasi from "../assets/images/TalentaVokasi.png";
+import { SketchArrow, SketchLoop, SketchSparks } from "./SketchFrame";
 
-// Halaman jurusan tidak diulang karena sudah punya kolom sendiri
-const footerLinks = [...navItems, ppdbLink]
-    .flatMap((item) => ("links" in item ? item.links : [item]))
-    .filter((link) => !link.href.startsWith("/jurusan/"));
+const brochureUrl = "https://images.lekar.co.id/file/pelita/infografis_pelita_nusantara.pdf";
+const mapsQuery = "SMK+Plus+Pelita+Nusantara+Cibinong+Bogor";
 
-// TODO: ganti dengan alamat & kontak asli sekolah
 const contacts: { icon: IconName; label: string; value: string; href?: string }[] = [
-    { icon: "mapPin", label: "Alamat", value: "Jl. Pendidikan No. 1, Indonesia" },
-    { icon: "phone", label: "WhatsApp", value: "0812-3456-7890", href: "https://wa.me/6281234567890" },
-    { icon: "mail", label: "Email", value: "info@pelitanusantara.sch.id", href: "mailto:info@pelitanusantara.sch.id" },
-    { icon: "clock", label: "Jam layanan", value: "Senin – Jumat, 07.00 – 15.00 WIB" },
+    { icon: "mail", label: "Email", value: "informasi@smkpluspnb.sch.id", href: "mailto:informasi@smkpluspnb.sch.id" },
+    { icon: "phoneCall", label: "Telepon", value: "0812-1086-8958 / (021) 875-4321", href: "tel:081210868958" },
+    { icon: "mapPin", label: "Alamat", value: "Gg. Olahraga No.20, Ciriung, Kec. Cibinong, Kabupaten Bogor, Jawa Barat 16918" },
 ];
 
-// TODO: isi dengan link akun resmi sekolah
 const socials: { icon: IconName; label: string; href: string }[] = [
-    { icon: "instagram", label: "Instagram", href: "#" },
-    { icon: "youtube", label: "YouTube", href: "#" },
-    { icon: "tiktok", label: "TikTok", href: "#" },
-    { icon: "facebook", label: "Facebook", href: "#" },
+    { icon: "globe", label: "Website Resmi", href: "https://smkpluspnb.sch.id" },
+    { icon: "instagram", label: "Instagram", href: "https://instagram.com/smkpelitanusantara" },
+    { icon: "facebook", label: "Facebook", href: "https://facebook.com/smkpelitanusantara" },
+    { icon: "whatsapp", label: "WhatsApp", href: whatsappUrl },
+    { icon: "youtube", label: "YouTube", href: "https://youtube.com/@smkpelitanusantara" },
+];
+
+// Halaman PPDB ada di aplikasi terpisah, jadi ikut ppdbLink supaya cukup diganti di satu tempat
+const mainLinks: MenuLink[] = [
+    { label: "Formulir PPDB Online", href: ppdbLink.href, external: true },
+    { label: "Detail Akomodasi & Asrama", href: `${ppdbLink.href}/akomodasi`, external: true },
+    { label: "Daftar Pengumuman Seleksi", href: `${ppdbLink.href}/pengumuman`, external: true },
+    { label: "Cek Status Pendaftar (NISN)", href: `${ppdbLink.href}/cek-status`, external: true },
+    { label: "Profil Sekolah Resmi", href: "https://smkpluspnb.sch.id" },
+];
+
+// TODO: isi dengan URL aplikasi siswa
+const studentApps: MenuLink[] = ["DigiYouth", "MyLms", "SiAkad", "Invert"].map((label) => ({ label, href: "#" }));
+
+// ?kategori= bisa dibaca halaman /berita nanti untuk langsung memfilter
+const newsLinks: MenuLink[] = newsCategories.map((category) => ({
+    label: category,
+    href: `/berita?kategori=${encodeURIComponent(category)}`,
+}));
+
+// TODO: angka masih statis, sambungkan ke penghitung pengunjung
+const visitorStats = [
+    { label: "Pengunjung Hari ini", value: "30" },
+    { label: "Pengunjung Bulan ini", value: "1.596" },
+    { label: "Pengunjung Tahun ini", value: "42.831" },
 ];
 
 export default function Footer() {
-    const scrollToTop = () => {
-        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
-    };
-
     return(
-        // "relative z-10" + background supaya menutupi video hero yang sticky
-        <footer className="relative z-10 overflow-hidden bg-brand-deepred text-brand-mist px-6 pt-16 md:pt-20">
-            {/* Dekorasi titik-titik */}
-            <div aria-hidden="true" className="pointer-events-none absolute right-6 top-10 hidden md:block w-40 h-28 bg-[radial-gradient(circle,rgb(255_255_255/0.1)_2px,transparent_2.5px)] bg-size-[22px_22px]" />
+        // "relative z-10" + background supaya menutupi video hero yang sticky (makanya jaraknya pakai padding, bukan margin)
+        // text-left menimpa justify dari body untuk seluruh footer
+        <footer className="relative z-10 bg-white pt-20 sm:pt-28 text-left">
+            {/* Banner ajakan daftar: teks di kiri, foto siswa di kanan (di HP & tablet di bawah teks) */}
+            <div className="px-6 mb-14">
+                <div className="relative max-w-6xl mx-auto overflow-hidden rounded-4xl border border-white/10 bg-linear-135 from-brand-darkred to-brand-deepred p-8 sm:p-12 lg:p-14 text-white shadow-softpill">
+                    {/* Dekorasi orbit di kanan atas: dua lingkaran coretan miring, di belakang teks & foto.
+                        Sengaja tidak terlalu keluar dari banner supaya tetap cukup terlihat untuk mulai digambar. */}
 
-            <div className="relative max-w-6xl mx-auto">
-                <div className="grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 lg:grid-cols-[1.5fr_1fr_1.2fr_1.5fr] lg:gap-10">
-                    {/* Identitas sekolah */}
-                    <div className="col-span-2 md:col-span-3 lg:col-span-1">
-                        <Link to="/" className="group inline-flex items-center gap-3">
-                            <span className="w-14 h-14 shrink-0 rounded-full bg-white p-2 shadow-softpill transition-transform group-hover:scale-105">
-                                <img src={logoSekolah} alt="" className="w-full h-full object-contain" loading="lazy" />
-                            </span>
+                    <div className="relative grid gap-8 lg:grid-cols-2 lg:gap-6">
+                        <div className="lg:self-center">
+                            <p className="mb-3 text-xs sm:text-sm font-bold uppercase tracking-[0.25em] text-[#F5C2C7]">
+                                Siap Menjadi Talenta Vokasi <SketchSparks tone="text-[#F5C2C7]">Terbaik?</SketchSparks>
+                            </p>
+                            <h2 className="font-display text-xl sm:text-2xl md:text-3xl lg:text-[2rem] font-bold uppercase tracking-wide leading-snug text-white drop-shadow-sm text-left">
+                                Langkah Nyata Membangun Masa Depan Gemilang Bersama SMK Plus Pelita Nusantara.
+                            </h2>
+
+                            <div className="mt-8 flex flex-wrap items-center gap-4">
+                                <a
+                                    href={whatsappUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center justify-center gap-2 rounded-full bg-linear-to-r from-brand-signal to-brand-darkred px-7 py-3 text-sm font-bold text-white shadow-md shadow-brand-darkred/25 transition-all duration-200 hover:from-brand-warmred hover:to-brand-deepred active:scale-95"
+                                >
+                                    Hubungi CS PPDB
+                                    <Icon name="phoneCall" className="w-4 h-4" />
+                                </a>
+                                <a
+                                    href={brochureUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="group inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/30 px-7 py-3 text-sm font-semibold text-white transition-all hover:border-white hover:bg-white/10 active:scale-95"
+                                >
+                                    Unduh Brosur
+                                    <SketchArrow className="w-7 h-3.5 transition-transform group-hover:translate-x-1" />
+                                </a>
+                            </div>
+                        </div>
+
+                        {/* Margin negatif = padding banner, supaya foto menempel ke tepi bawah banner (dan tepi kiri-kanan
+                            di HP & tablet), jadi potongan tubuh siswa tidak kelihatan. Di desktop sisi kirinya tidak
+                            menempel ke tepi, jadi dipudarkan. */}
+                        <div className="relative self-end -mx-8 -mb-8 sm:-mx-12 sm:-mb-12 lg:ml-0 lg:-mr-14 lg:-mb-14">
+                            {/* aspect 1326/588 = gambar asli (1326x748) tanpa 160px bagian atas, yang kosong dan
+                                masih menyisakan bercak bekas hapus background */}
+                            <img
+                                src={fotoTalentaVokasi}
+                                alt="Siswa SMK Plus Pelita Nusantara dari berbagai jurusan"
+                                className="relative w-full aspect-1326/588 object-cover object-bottom lg:mask-[linear-gradient(to_right,transparent,black_12%)]"
+                                loading="lazy"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="border-t border-brand-ink/10 px-6 pt-16 pb-12 text-brand-ink">
+                <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 items-start">
+                    {/* Identitas sekolah, kontak, media sosial */}
+                    <div className="lg:col-span-4 space-y-4">
+                        <Link to="/" className="group flex w-fit items-center gap-3">
+                            <img src={logoSekolah} alt="" className="h-12 w-12 shrink-0 object-contain transition-transform group-hover:scale-105" loading="lazy" />
                             <span className="flex flex-col">
-                                <span className="font-display text-base font-bold uppercase tracking-wide leading-tight text-white">SMK PLUS PELITA NUSANTARA</span>
-                                <span className="mt-0.5 text-[10px] uppercase font-semibold tracking-wider text-brand-mist/70">
+                                <span className="font-display text-base font-bold uppercase tracking-wide leading-tight text-brand-ink transition-colors group-hover:text-brand-darkred">
+                                    SMK PLUS PELITA NUSANTARA
+                                </span>
+                                <span className="mt-0.5 text-[10px] uppercase font-semibold tracking-wider text-brand-darkred">
                                     We Are Different
                                 </span>
                             </span>
                         </Link>
 
-                        <p className="mt-6 max-w-sm text-sm leading-relaxed text-brand-mist/75">
-                            Sekolah Menengah Kejuruan yang mencetak lulusan terampil, berkarakter, dan siap bersaing
-                            di dunia kerja maupun wirausaha.
+                        <p className="max-w-sm text-xs sm:text-[13px] leading-relaxed text-brand-ink/75">
+                            Bersama SMK Plus Pelita Nusantara, jadilah generasi tangguh, berakhlak, dan berwawasan teknologi vokasi unggul.
                         </p>
 
-                        <ul className="mt-6 flex gap-3" aria-label="Media sosial">
+                        <address className="space-y-2.5 pt-1 text-xs not-italic text-brand-ink/80">
+                            {contacts.map((contact) => (
+                                <div key={contact.label} className="flex items-start gap-2.5">
+                                    <Icon name={contact.icon} className="w-4 h-4 shrink-0 text-brand-signal" />
+                                    {contact.href ? (
+                                        <a href={contact.href} className="transition-colors hover:text-brand-darkred hover:underline">
+                                            <span className="sr-only">{contact.label}: </span>
+                                            {contact.value}
+                                        </a>
+                                    ) : (
+                                        <p className="leading-snug">
+                                            <span className="sr-only">{contact.label}: </span>
+                                            {contact.value}
+                                        </p>
+                                    )}
+                                </div>
+                            ))}
+                        </address>
+
+                        <ul className="flex items-center gap-4 pt-2" aria-label="Media sosial">
                             {socials.map((social) => (
                                 <li key={social.label}>
                                     <a
@@ -67,115 +156,129 @@ export default function Footer() {
                                         target="_blank"
                                         rel="noreferrer"
                                         aria-label={social.label}
-                                        className="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center transition-colors hover:bg-brand-warmred"
+                                        title={social.label}
+                                        className="block text-brand-signal transition-colors hover:text-brand-darkred"
                                     >
-                                        <Icon name={social.icon} className="w-5 h-5" />
+                                        <Icon name={social.icon} className="w-4 h-4" />
                                     </a>
                                 </li>
                             ))}
                         </ul>
+
+                        {/* Gambarnya punya ruang kosong lebar di atas & bawah, jadi ukurannya diatur dari lebar
+                            (bukan h-8 seperti desain) supaya logo-logonya tetap terbaca */}
+                        <img
+                            src={logoPartner}
+                            alt="Partner & kolaborator: Jagoan Hosting Infra Competition, Jagoan Hosting, Komdigi, Maspion IT, Garuda Spark Innovation Hub"
+                            width={3727}
+                            height={592}
+                            className="h-auto w-full max-w-xs opacity-90 transition-opacity hover:opacity-100"
+                            loading="lazy"
+                        />
+
+                        <p className="pt-2 text-[11px] sm:text-xs font-medium text-brand-ink/60">
+                            Copyright &copy; {new Date().getFullYear()} All right reserved | PENUS
+                        </p>
                     </div>
 
-                    <nav aria-label="Navigasi footer">
-                        <FooterHeading>Navigasi</FooterHeading>
-                        <ul className="mt-6 space-y-3">
-                            {footerLinks.map((link) => (
-                                <li key={link.href}>
-                                    <FooterLink to={link.href} external={link.external}>{link.label}</FooterLink>
-                                </li>
-                            ))}
-                        </ul>
-                    </nav>
-
-                    <div>
-                        <FooterHeading>Jurusan</FooterHeading>
-                        <ul className="mt-6 space-y-3">
-                            {majors.map((major) => (
-                                <li key={major.code}>
-                                    <FooterLink to={`/jurusan/${major.slug}`}>
-                                        {`${major.highlight} ${major.rest}`.trim()}
-                                    </FooterLink>
-                                </li>
-                            ))}
-                        </ul>
+                    <div className="lg:col-span-2 space-y-6">
+                        <FooterMenu title="Menu Utama" links={mainLinks} />
+                        <FooterMenu title="Aplikasi Siswa" links={studentApps} />
                     </div>
 
-                    <div className="col-span-2 md:col-span-1">
-                        <FooterHeading>Hubungi Kami</FooterHeading>
-                        <address className="mt-6 not-italic">
-                            <ul className="space-y-4">
-                                {contacts.map((contact) => {
-                                    const content = (
-                                        <>
-                                            <span className="w-9 h-9 shrink-0 rounded-lg bg-white/10 text-white flex items-center justify-center transition-colors group-hover:bg-brand-warmred">
-                                                <Icon name={contact.icon} className="w-[18px] h-[18px]" />
-                                            </span>
-                                            <span className="pt-2 text-sm leading-snug text-brand-mist/85 [overflow-wrap:anywhere]">
-                                                <span className="sr-only">{contact.label}: </span>
-                                                {contact.value}
-                                            </span>
-                                        </>
-                                    );
+                    <div className="lg:col-span-3 space-y-6">
+                        <FooterMenu title="Berita Sekolah" links={newsLinks} />
 
-                                    return(
-                                        <li key={contact.label}>
-                                            {contact.href ? (
-                                                <a href={contact.href} className="group flex gap-3 transition-colors hover:text-white">
-                                                    {content}
-                                                </a>
-                                            ) : (
-                                                <div className="flex gap-3">{content}</div>
-                                            )}
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        </address>
+                        <div>
+                            <FooterHeading>Pengunjung Website</FooterHeading>
+                            <dl className="mt-3.5 space-y-1.5 text-xs sm:text-[13px] text-brand-ink/75">
+                                {visitorStats.map((stat) => (
+                                    <div key={stat.label} className="flex gap-1">
+                                        <dt>{stat.label} :</dt>
+                                        <dd className="font-medium text-brand-ink">{stat.value}</dd>
+                                    </div>
+                                ))}
+                            </dl>
+                        </div>
                     </div>
-                </div>
 
-                <div className="mt-14 md:mt-16 flex flex-col-reverse items-center gap-4 border-t border-white/10 py-6 sm:flex-row sm:justify-between">
-                    <p className="text-center text-xs sm:text-sm text-brand-mist/65">
-                        &copy; {new Date().getFullYear()} SMK Plus Pelita Nusantara. Seluruh hak cipta dilindungi.
-                    </p>
+                    <div className="lg:col-span-3">
+                        <FooterHeading>Lokasi Sekolah</FooterHeading>
 
-                    <button
-                        type="button"
-                        onClick={scrollToTop}
-                        className="group inline-flex items-center gap-3 text-sm font-semibold text-brand-mist/80 transition-colors hover:text-white"
-                    >
-                        Kembali ke atas
-                        <span className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center transition-colors group-hover:bg-brand-warmred">
-                            <svg className="w-4 h-4 transition-transform group-hover:-translate-y-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <path d="M12 19V5M6 11l6-6 6 6" />
-                            </svg>
-                        </span>
-                    </button>
+                        <div className="relative mt-3 h-55 w-full overflow-hidden rounded-card border border-brand-ink/15 shadow-sm">
+                            <a
+                                href={`https://maps.google.com/?q=${mapsQuery}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="absolute top-2.5 left-2.5 z-10 inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-600 shadow-sm transition-all hover:bg-slate-50 hover:shadow-md"
+                            >
+                                Buka di Maps
+                                <Icon name="externalLink" className="w-3.5 h-3.5" />
+                            </a>
+
+                            <iframe
+                                title="Peta Lokasi SMK Plus Pelita Nusantara"
+                                src={`https://maps.google.com/maps?q=${mapsQuery}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                                className="h-full w-full border-0"
+                                loading="lazy"
+                                referrerPolicy="no-referrer-when-downgrade"
+                            />
+                        </div>
+
+                        <p className="mt-3 text-[11px] leading-tight text-brand-ink/60">
+                            Lokasi strategis dekat pusat pemerintahan Cibinong, Kabupaten Bogor.
+                        </p>
+                    </div>
                 </div>
             </div>
-
-            {/* Tulisan besar di dasar footer, sengaja terpotong */}
-            <p aria-hidden="true" className="pointer-events-none select-none -mx-6 -mb-[0.12em] text-center font-display text-[11vw] font-bold uppercase tracking-wide leading-none whitespace-nowrap text-white/[0.06]">
-                Pelita Nusantara
-            </p>
         </footer>
+    )
+}
+
+function FooterMenu({ title, links }: { title: string; links: MenuLink[] }) {
+    return(
+        <div>
+            <FooterHeading>{title}</FooterHeading>
+            <ul className="mt-3.5 space-y-2 text-xs sm:text-[13px] font-medium text-brand-ink/75">
+                {links.map((link) => (
+                    <li key={link.label}>
+                        <FooterLink link={link} />
+                    </li>
+                ))}
+            </ul>
+        </div>
     )
 }
 
 function FooterHeading({ children }: { children: ReactNode }) {
     return(
-        <h2 className="font-display text-lg font-bold uppercase tracking-wide text-white">
+        <h2 className="font-display text-sm sm:text-base font-bold uppercase tracking-wide text-brand-ink">
             {children}
-            <span className="mt-1 block h-1 w-8 bg-brand-warmred" aria-hidden="true" />
         </h2>
     )
 }
 
-function FooterLink({ to, external, children }: { to: string; external?: boolean; children: ReactNode }) {
+function FooterLink({ link }: { link: MenuLink }) {
+    const className = "transition-colors hover:text-brand-darkred";
+
+    // Situs lain dibuka di tab baru; "#" = link yang belum punya tujuan
+    if (!link.href.startsWith("/")) {
+        const otherSite = link.href.startsWith("http");
+        return(
+            <a
+                href={link.href}
+                target={otherSite ? "_blank" : undefined}
+                rel={otherSite ? "noreferrer" : undefined}
+                className={className}
+            >
+                {link.label}
+            </a>
+        )
+    }
+
     return(
-        <Link to={to} reloadDocument={external} className="group inline-flex items-center text-sm text-brand-mist/75 transition-colors hover:text-white">
-            <span className="h-px w-0 bg-brand-warmred transition-all duration-300 group-hover:w-3 group-hover:mr-2" aria-hidden="true" />
-            {children}
+        <Link to={link.href} reloadDocument={link.external} className={className}>
+            {link.label}
         </Link>
     )
 }

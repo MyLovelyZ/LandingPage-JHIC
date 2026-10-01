@@ -1,88 +1,115 @@
-import Icon from "../Icon";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Swiper, SwiperSlide, type SwiperClass } from "swiper/react";
+import { A11y, Keyboard } from "swiper/modules";
+import "swiper/css";
+import { SketchArrow } from "../SketchFrame";
 import { facilities, type Facility } from "../../data/facilities";
 
-const [featured, ...others] = facilities;
+// Hanya fasilitas yang sudah punya foto, supaya slider beranda tidak berisi kotak ikon
+const photoFacilities = facilities.filter((f) => f.images.length > 0);
 
 export default function FacilitiesHome() {
+    const [swiper, setSwiper] = useState<SwiperClass | null>(null);
+    const [active, setActive] = useState(0);
+
     return(
         <section className="relative z-10 overflow-hidden bg-white text-brand-ink px-6 py-20 md:py-28">
-            {/* Dekorasi titik-titik */}
-            <div aria-hidden="true" className="pointer-events-none absolute right-6 top-10 hidden md:block w-40 h-28 bg-[radial-gradient(circle,var(--color-brand-mist)_2px,transparent_2.5px)] bg-size-[22px_22px]" />
-
             <div className="relative max-w-6xl mx-auto">
-                <div className="grid gap-4 md:grid-cols-2 md:items-end">
-                    <div>
-                        <p className="text-xs uppercase tracking-[0.25em] font-semibold text-brand-darkred">
-                            Fasilitas Sekolah
-                        </p>
-                        <h2 className="mt-3 font-display text-3xl md:text-4xl font-bold uppercase tracking-wide leading-tight">
-                            Belajar dengan Peralatan Standar Industri
-                        </h2>
+                <h2 className="text-center text-balance font-display text-3xl md:text-4xl font-bold uppercase tracking-wide leading-tight">
+                    <span className="mx-auto mb-4 block h-1.5 w-20 bg-brand-warmred" aria-hidden="true" />
+                    Fasilitas Penunjang{" "}
+                    <span className="text-brand-darkred">Belajar &amp; Berkarya SMK Plus Pelita Nusantara</span>
+                </h2>
+
+                <Swiper
+                    modules={[A11y, Keyboard]}
+                    loop
+                    keyboard={{ enabled: true, onlyInViewport: true }}
+                    slidesPerView={1.15}
+                    spaceBetween={16}
+                    breakpoints={{
+                        640: { slidesPerView: 2, spaceBetween: 20 },
+                        1024: { slidesPerView: 3, spaceBetween: 24 },
+                    }}
+                    onSwiper={setSwiper}
+                    onRealIndexChange={(s) => setActive(s.realIndex)}
+                    className="mt-12 md:mt-16"
+                >
+                    {photoFacilities.map((facility) => (
+                        // "h-auto!" menimpa height 100% bawaan Swiper supaya semua kartu sama tinggi
+                        <SwiperSlide key={facility.id} className="h-auto!">
+                            <FacilityCard facility={facility} />
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
+
+                <div className="mt-8 flex items-center justify-between gap-4">
+                    <SlideButton direction="left" onClick={() => swiper?.slidePrev()} />
+
+                    <div className="flex flex-wrap justify-center gap-3">
+                        {photoFacilities.map((facility, i) => (
+                            <button
+                                key={facility.id}
+                                type="button"
+                                onClick={() => swiper?.slideToLoop(i)}
+                                aria-label={`Tampilkan ${facility.title}`}
+                                aria-current={i === active ? "true" : undefined}
+                                className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                                    i === active ? "bg-brand-darkred" : "bg-brand-ink/20 hover:bg-brand-ink/40"
+                                }`}
+                            />
+                        ))}
                     </div>
-                    <p className="text-base md:text-lg leading-relaxed text-brand-ink/70 md:max-w-md md:justify-self-end">
-                        Setiap jurusan punya ruang praktik sendiri, sehingga siswa terbiasa memakai alat yang sama
-                        dengan yang digunakan di tempat kerja nanti.
-                    </p>
+
+                    <SlideButton direction="right" onClick={() => swiper?.slideNext()} />
                 </div>
 
-                {/* Desktop: kartu unggulan memanjang ke bawah di kolom kiri, sisanya di 2 kolom kanan */}
-                <div className="mt-12 md:mt-16 grid gap-5 lg:grid-cols-3">
-                    {featured && <FacilityCard facility={featured} featured />}
-
-                    {others.length > 0 && (
-                        <ul className="grid gap-5 sm:grid-cols-2 lg:col-span-2">
-                            {others.map((facility) => (
-                                <li key={facility.id}>
-                                    <FacilityCard facility={facility} />
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                <div className="mt-10 text-center">
+                    <Link
+                        to="/fasilitas"
+                        className="group inline-flex items-center gap-1.5 text-sm font-semibold text-brand-darkred"
+                    >
+                        Lihat Semua Fasilitas
+                        <SketchArrow className="w-6 h-3 transition-transform group-hover:translate-x-1" />
+                    </Link>
                 </div>
             </div>
         </section>
     )
 }
 
-function FacilityCard({ facility, featured = false }: { facility: Facility; featured?: boolean }) {
+function FacilityCard({ facility }: { facility: Facility }) {
     return(
-        <article
-            className={`group relative overflow-hidden rounded-card bg-linear-to-br from-brand-signal to-brand-deepred shadow-lg shadow-brand-ink/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
-                featured ? "aspect-4/3 sm:aspect-5/2 lg:aspect-auto" : "aspect-video"
-            }`}
-        >
-            {facility.image ? (
+        // text-left: kartu sempit, teks yang terbungkus jadi renggang kalau ikut justify dari body
+        <article className="group h-full flex flex-col overflow-hidden rounded-card border border-dashed border-brand-ink/20 bg-white text-left">
+            {/* Foto sampul dibuat besar (4:3, selebar kartu) supaya fasilitas terlihat jelas */}
+            <div className="relative aspect-4/3 overflow-hidden bg-linear-to-br from-brand-signal to-brand-deepred">
                 <img
-                    src={facility.image}
+                    src={facility.images[0]}
                     alt=""
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
                 />
-            ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-white/15 transition-transform duration-500 group-hover:scale-110">
-                    <Icon name={facility.icon} className={featured ? "w-28 h-28 md:w-36 md:h-36" : "w-16 h-16"} />
-                </div>
-            )}
+            </div>
 
-            <div className="absolute inset-0 bg-linear-to-t from-brand-ink/90 via-brand-ink/40 to-transparent" />
-
-            <div className={`absolute inset-x-0 bottom-0 ${featured ? "p-5 md:p-7" : "p-4"}`}>
-                {featured ? (
-                    <h3 className="font-display text-4xl md:text-5xl font-bold uppercase tracking-wide leading-none text-white">
-                        {facility.title}
-                        <span aria-hidden="true" className="mt-1.5 block h-1 w-10 md:w-12 bg-brand-warmred" />
-                    </h3>
-                ) : (
-                    <h3 className="text-base font-semibold leading-snug text-white line-clamp-2">
-                        {facility.title}
-                    </h3>
-                )}
-                <p className={`leading-relaxed text-brand-mist/75 ${
-                    featured ? "mt-3 md:mt-4 max-w-xl text-base line-clamp-3 md:line-clamp-2 lg:line-clamp-5" : "mt-1 text-sm line-clamp-2"
-                }`}>
-                    {facility.desc}
-                </p>
+            <div className="flex-1 p-5 md:p-6">
+                <h3 className="text-lg font-semibold">{facility.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-brand-ink/70">{facility.desc}</p>
             </div>
         </article>
+    )
+}
+
+function SlideButton({ direction, onClick }: { direction: "left" | "right"; onClick: () => void }) {
+    return(
+        <button
+            type="button"
+            onClick={onClick}
+            aria-label={direction === "left" ? "Fasilitas sebelumnya" : "Fasilitas berikutnya"}
+            className="shrink-0 w-12 h-12 rounded-lg bg-brand-darkred text-white flex items-center justify-center shadow-lg shadow-brand-darkred/25 transition-colors hover:bg-brand-deepred"
+        >
+            <SketchArrow className={`w-7 h-3.5 ${direction === "left" ? "-scale-x-100" : ""}`} />
+        </button>
     )
 }

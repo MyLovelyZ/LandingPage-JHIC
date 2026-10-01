@@ -14,7 +14,8 @@ export type MenuGroup = {
 // TODO: ganti href dengan URL lengkap kalau PPDB & BKK dipasang di domain/subdomain lain
 export const ppdbLink: MenuLink = { label: "Daftar PPDB", href: "/ppdb", external: true };
 
-// TODO: /berita, /fasilitas, dan /profil-guru belum ada halamannya
+export const whatsappUrl = "https://wa.me/6281210868958";
+
 export const navItems: (MenuLink | MenuGroup)[] = [
     { label: "Beranda", href: "/" },
     {

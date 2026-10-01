@@ -6,6 +6,7 @@
 
   font-display (Oswald) -> selalu "font-bold uppercase tracking-wide"
     Judul hero (h1)      : text-4xl sm:text-6xl md:text-7xl lg:text-8xl leading-none
+    Judul berita (h1)    : text-3xl md:text-4xl lg:text-5xl leading-tight   (judul panjang, jadi lebih kecil dari hero)
     Label unggulan kartu : text-4xl md:text-5xl leading-none
     Judul section (h2)   : text-3xl md:text-4xl leading-tight   (juga angka statistik & kode jurusan)
     Judul kolom/sidebar  : text-lg
@@ -51,6 +52,13 @@
       opacity: 1;
       transform: translateY(0);
     }
+  }
+}
+
+/* Semua teks rata kiri-kanan (justify). Kelas seperti text-center tetap bisa menimpa. */
+@layer base {
+  body {
+    text-align: justify;
   }
 }
 

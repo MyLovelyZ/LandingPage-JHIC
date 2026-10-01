@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import heroVideo from "../../assets/videos/header-content-small.mp4";
+import { SketchArrow, SketchUnderline } from "../SketchFrame";
 
 export default function HeroHome() {
     const endRef = useRef<HTMLDivElement>(null);
@@ -86,8 +87,12 @@ export default function HeroHome() {
                         <h1 className="mt-3 font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold uppercase tracking-wide leading-none text-white">
                             SMK PLUS
                             <br />
+                            {/* delay: coretan mulai setelah judul selesai muncul (fade 1 detik) */}
                             PELITA NUSANTARA
                         </h1>
+                        <p className="text-xs sm:text-sm md:text-base uppercase tracking-[0.25em] font-semibold text-brand-mist/80">
+                            <SketchUnderline size="lg" tone="text-brand-signal" delay={700}>Mewujudkan Generasi Vokasi Terampil, Berkarakter, dan Siap Kerja.</SketchUnderline>
+                        </p>
                     </div>
                 </div>
 
@@ -99,12 +104,10 @@ export default function HeroHome() {
                         window.scrollTo({ top: nextSectionTop(), behavior: reduce ? "auto" : "smooth" });
                     }}
                     aria-label="Scroll ke bawah"
-                    className="group absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/80 transition-colors hover:text-white"
+                    className="group absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/80 transition-colors hover:text-white"
                 >
                     <span className="text-xs font-semibold uppercase tracking-[0.25em]">Scroll Down</span>
-                    <svg className="w-5 h-5 animate-bounce motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="m6 9 6 6 6-6" />
-                    </svg>
+                    <SketchArrow direction="down" className="w-3.5 h-7 animate-bounce motion-reduce:animate-none" />
                 </button>
             </section>
 
